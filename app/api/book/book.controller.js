@@ -98,6 +98,21 @@ async function getOneBook(req, res) {
     }
 }
 
+async function getBookById(req, res) {
+    try {
+        const { id } = req.body;
+        const book = await bookService.getBookById(id);
+        if (!book) {
+            return res.status(404).json({ message: 'Không tìm thấy sách' });
+        }
+        res.json(book);
+        console.log('Lấy sách theo ID thành công');
+    } catch (error) {
+        console.error('Lỗi khi lấy sách theo ID:', error);
+        res.status(500).send('Lấy sách theo ID thất bại');
+    }
+}
+
 async function addBook(req, res) {
     try {
         const body = req.body;
@@ -217,5 +232,6 @@ module.exports = {
     getAllGenre,
     getOneBook,
     updateBook,
-    deleteBook
+    deleteBook,
+    getBookById
 };

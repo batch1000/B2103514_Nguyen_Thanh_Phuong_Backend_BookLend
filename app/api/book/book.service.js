@@ -88,6 +88,20 @@ async function getOneBook(keyword) {
   }
 }
 
+async function getBookById(id) {
+  try {
+    const book = await Sach.findById(id)
+      .populate('MaNXB', 'TenNXB DiaChi')
+      .populate('MaTheLoai', 'TenTheLoai')
+      .exec();
+
+    return book;
+  } catch (err) {
+    console.error('Lỗi khi truy vấn sách theo ID:', err);
+    throw err;
+  }
+}
+
 async function addBook(data) {
   try {
     let nxb = await NhaXuatBan.findOne({ TenNXB: data.NhaXuatBan }).exec();
@@ -177,76 +191,76 @@ async function updateBook(id, data) {
 
 function extractPublicIdFromUrl(imageUrl) {
   try {
-      console.log('Đang trích xuất publicId từ URL:', imageUrl);
-      
-      if (!imageUrl || !imageUrl.includes('cloudinary.com')) {
-          console.log('URL không phải từ Cloudinary');
-          return null;
-      }
+    console.log('Đang trích xuất publicId từ URL:', imageUrl);
 
-      // Tách URL và lấy phần sau '/upload/'
-      const parts = imageUrl.split('/upload/');
-      if (parts.length < 2) {
-          console.log('URL không có phần /upload/');
-          return null;
-      }
-
-      let pathAfterUpload = parts[1];
-      console.log('Path sau upload:', pathAfterUpload);
-      
-      // Bỏ version nếu có (vXXXXXXXXXX/)
-      pathAfterUpload = pathAfterUpload.replace(/^v\d+\//, '');
-      console.log('Path sau khi bỏ version:', pathAfterUpload);
-      
-      // Bỏ các transformations nếu có (như w_500,h_300,c_fill/ etc.)
-      const segments = pathAfterUpload.split('/');
-      const lastSegment = segments[segments.length - 1];
-      
-      // Nếu có nhiều segments và segment cuối có extension, lấy path đầy đủ trừ extension
-      let publicId;
-      if (segments.length > 1) {
-          // Có folder: images/filename.jpg -> images/filename
-          publicId = pathAfterUpload.replace(/\.[^/.]+$/, ''); // Bỏ extension cuối
-      } else {
-          // Không có folder: filename.jpg -> filename
-          publicId = lastSegment.replace(/\.[^/.]+$/, '');
-      }
-      
-      console.log('PublicId được trích xuất:', publicId);
-      return publicId;
-  } catch (error) {
-      console.error('Lỗi khi trích xuất publicId:', error);
+    if (!imageUrl || !imageUrl.includes('cloudinary.com')) {
+      console.log('URL không phải từ Cloudinary');
       return null;
+    }
+
+    // Tách URL và lấy phần sau '/upload/'
+    const parts = imageUrl.split('/upload/');
+    if (parts.length < 2) {
+      console.log('URL không có phần /upload/');
+      return null;
+    }
+
+    let pathAfterUpload = parts[1];
+    console.log('Path sau upload:', pathAfterUpload);
+
+    // Bỏ version nếu có (vXXXXXXXXXX/)
+    pathAfterUpload = pathAfterUpload.replace(/^v\d+\//, '');
+    console.log('Path sau khi bỏ version:', pathAfterUpload);
+
+    // Bỏ các transformations nếu có (như w_500,h_300,c_fill/ etc.)
+    const segments = pathAfterUpload.split('/');
+    const lastSegment = segments[segments.length - 1];
+
+    // Nếu có nhiều segments và segment cuối có extension, lấy path đầy đủ trừ extension
+    let publicId;
+    if (segments.length > 1) {
+      // Có folder: images/filename.jpg -> images/filename
+      publicId = pathAfterUpload.replace(/\.[^/.]+$/, ''); // Bỏ extension cuối
+    } else {
+      // Không có folder: filename.jpg -> filename
+      publicId = lastSegment.replace(/\.[^/.]+$/, '');
+    }
+
+    console.log('PublicId được trích xuất:', publicId);
+    return publicId;
+  } catch (error) {
+    console.error('Lỗi khi trích xuất publicId:', error);
+    return null;
   }
 }
 
 async function deleteBook(id) {
   try {
-      const book = await Sach.findById(id);
-      
-      if (!book) {
-          throw new Error('Không tìm thấy sách để xóa');
+    const book = await Sach.findById(id);
+
+    if (!book) {
+      throw new Error('Không tìm thấy sách để xóa');
+    }
+
+    const publicId = extractPublicIdFromUrl(book.Image);
+
+    const result = await Sach.findByIdAndDelete(id);
+
+    if (publicId) {
+      try {
+        await deleteImageFromCloudinary(publicId);
+        console.log('Đã xóa ảnh từ Cloudinary:', publicId);
+      } catch (imageError) {
+        console.warn('Không thể xóa ảnh từ Cloudinary:', imageError.message);
       }
+    } else {
+      console.warn('Không thể trích xuất publicId từ URL:', book.Image);
+    }
 
-      const publicId = extractPublicIdFromUrl(book.Image);
-
-      const result = await Sach.findByIdAndDelete(id);
-      
-      if (publicId) {
-          try {
-              await deleteImageFromCloudinary(publicId);
-              console.log('Đã xóa ảnh từ Cloudinary:', publicId);
-          } catch (imageError) {
-              console.warn('Không thể xóa ảnh từ Cloudinary:', imageError.message);
-          }
-      } else {
-          console.warn('Không thể trích xuất publicId từ URL:', book.Image);
-      }
-
-      return result;
+    return result;
   } catch (err) {
-      console.error('Lỗi khi xóa sách:', err);
-      throw err;
+    console.error('Lỗi khi xóa sách:', err);
+    throw err;
   }
 }
 
@@ -257,5 +271,6 @@ module.exports = {
   getAllGenre,
   getOneBook,
   updateBook,
-  deleteBook
+  deleteBook,
+  getBookById
 };

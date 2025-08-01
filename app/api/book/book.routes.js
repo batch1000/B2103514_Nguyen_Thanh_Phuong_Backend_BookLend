@@ -8,11 +8,13 @@ const
         getAllBook,
         updateBook,
         getOneBook,
-        deleteBook
+        deleteBook,
+        getBookById
     } = require('./book.controller')
 
 const router = express.Router()
 
+router.post('/getBookById', getBookById);
 router.post('/getOneBook', getOneBook);
 router.get('/getAllBook', getAllBook);
 router.post('/addbook', upload.single('image'), addBook);
