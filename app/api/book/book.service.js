@@ -1,6 +1,7 @@
 const Sach = require('../../models/sachModel');
 const NhaXuatBan = require('../../models/nhaxuatbanModel');
 const TheLoaiSach = require('../../models/theloaisachModel');
+const TheoDoiMuonSach = require('../../models/theodoimuonsachModel')
 
 const { deleteImageFromCloudinary } = require('../../services/cloudinary.service');
 
@@ -262,6 +263,43 @@ async function deleteBook(id) {
     console.error('Lỗi khi xóa sách:', err);
     throw err;
   }
+
+}
+
+async function lendBook(data) {
+  try {
+    const { MaSach, MaDocGia, SoLuongMuon } = data;
+
+    const record = new TheoDoiMuonSach({
+      MaSach,
+      MaDocGia,
+      SoLuong: SoLuongMuon,
+      TrangThai: 'pending'
+    });
+
+    const savedRecord = await record.save();
+    return savedRecord;
+
+  } catch (err) {
+    console.error('Lỗi khi mượn sách:', err);
+    throw err;
+  }
+}
+
+async function getInfoLendBook(data) {
+  try {
+      const { MaSach, MaDocGia } = data;
+      
+      const lendRecord = await TheoDoiMuonSach.findOne({
+          MaSach,
+          MaDocGia,
+          TrangThai: { $in: ['pending', 'approved', 'borrowing'] }
+      }).sort({ createdAt: -1 }); // Lấy record mới nhất
+      return lendRecord;
+  } catch (err) {
+      console.error('Lỗi khi lấy thông tin mượn sách:', err);
+      throw err;
+  }
 }
 
 module.exports = {
@@ -272,5 +310,7 @@ module.exports = {
   getOneBook,
   updateBook,
   deleteBook,
-  getBookById
+  getBookById,
+  lendBook,
+  getInfoLendBook
 };

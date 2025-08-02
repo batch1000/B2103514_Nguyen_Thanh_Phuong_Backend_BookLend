@@ -69,7 +69,6 @@ async function getAllGenre(req, res) {
     try {
         const result = await bookService.getAllGenre();
         res.json(result);
-        console.log('Lấy tất cả thể loại thành công');
     } catch (error) {
         res.status(500).send('Lấy thể loại thất bại');
     }
@@ -79,7 +78,6 @@ async function getAllBook(req, res) {
     try {
         const books = await bookService.getAllBook();
         res.json(books);
-        console.log('Lấy tất cả sách thành công:', books.length);
     } catch (error) {
         console.error('Lỗi khi lấy danh sách sách:', error);
         res.status(500).send('Lấy danh sách sách thất bại');
@@ -106,7 +104,6 @@ async function getBookById(req, res) {
             return res.status(404).json({ message: 'Không tìm thấy sách' });
         }
         res.json(book);
-        console.log('Lấy sách theo ID thành công');
     } catch (error) {
         console.error('Lỗi khi lấy sách theo ID:', error);
         res.status(500).send('Lấy sách theo ID thất bại');
@@ -225,6 +222,28 @@ async function deleteBook(req, res) {
     }
 }
 
+async function lendBook(req, res) {
+    try {
+        const data = req.body;
+        const result = await bookService.lendBook(data);
+        res.json(result);
+    } catch (error) {
+        console.error('Lỗi khi đăng ký mượn sách:', error);
+        res.status(500).send('Đăng ký mượn sách thất bại');
+    }
+}
+
+async function getInfoLendBook(req, res) {
+    try {
+        const { MaSach, MaDocGia } = req.body;
+        const lendInfo = await bookService.getInfoLendBook({ MaSach, MaDocGia });
+        res.json(lendInfo);
+    } catch (error) {
+        console.error('Lỗi khi lấy thông tin mượn sách:', error);
+        res.status(500).send('Lấy thông tin mượn sách thất bại');
+    }
+}
+
 module.exports = {
     addBook,
     getAllBook,
@@ -233,5 +252,7 @@ module.exports = {
     getOneBook,
     updateBook,
     deleteBook,
-    getBookById
+    getBookById,
+    lendBook,
+    getInfoLendBook
 };

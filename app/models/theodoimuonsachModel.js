@@ -1,29 +1,53 @@
 const mongoose = require('mongoose');
 
 const TheoDoiMuonSachSchema = new mongoose.Schema({
+  SoLuong: {
+    type: Number,
+    required: true,
+  },
+
   NgayMuon: {
     type: Date,
-    required: true,
-    default: Date.now
+    required: false,
+    default: null
   },
+
   NgayTra: {
     type: Date,
-    required: true
+    required: false,
+    default: null
   },
+
+  TrangThai: {
+    type: String,
+    enum: [
+      'pending',    // Chờ duyệt
+      'approved',   // Đã duyệt
+      'denied',     // Bị từ chối
+      'borrowing',  // Đang mượn
+      'returned',   // Đã trả
+      'overdue'     // Quá hạn
+    ],
+    default: 'pending'
+  },
+
   MaSach: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Sach',
     required: true
   },
+
   MaDocGia: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DocGia',
     required: true
   },
+
   Msnv: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'NhanVien',
-    required: true
+    required: false,
+    default: null
   }
 }, {
   timestamps: true
