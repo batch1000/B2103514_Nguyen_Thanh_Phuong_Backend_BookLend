@@ -334,11 +334,30 @@ async function updateBorrowStatus(requestId, adminId, status) {
       Msnv: adminId
     };
 
-    // Nếu duyệt (approved) thì cập nhật NgayMuon và NgayTra
     if (status === 'approved') {
       const now = new Date();
       updateFields.NgayMuon = now;
-      updateFields.NgayTra = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // Cộng 7 ngày
+      updateFields.NgayTra = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      // Lấy thông tin yêu cầu mượn để biết MaSach và SoLuong
+      const request = await TheoDoiMuonSach.findById(requestId);
+      if (!request) {
+        throw new Error('Không tìm thấy yêu cầu mượn');
+      }
+
+      const sach = await Sach.findById(request.MaSach);
+      if (!sach) {
+        throw new Error('Không tìm thấy sách');
+      }
+
+      // Kiểm tra đủ số lượng không
+      if (sach.SoQuyen < request.SoLuong) {
+        throw new Error('Không đủ số lượng sách để cho mượn');
+      }
+
+      // Trừ số lượng sách
+      sach.SoQuyen -= request.SoLuong;
+      await sach.save();
     }
 
     const updated = await TheoDoiMuonSach.findByIdAndUpdate(
@@ -348,6 +367,7 @@ async function updateBorrowStatus(requestId, adminId, status) {
     );
 
     return updated;
+
   } catch (err) {
     console.error('Lỗi khi cập nhật trạng thái mượn sách:', err);
     throw err;
