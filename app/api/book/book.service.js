@@ -2,6 +2,7 @@ const Sach = require('../../models/sachModel');
 const NhaXuatBan = require('../../models/nhaxuatbanModel');
 const TheLoaiSach = require('../../models/theloaisachModel');
 const TheoDoiMuonSach = require('../../models/theodoimuonsachModel')
+const DocGia = require('../../models/docgiaModel')
 
 const { deleteImageFromCloudinary } = require('../../services/cloudinary.service');
 
@@ -302,6 +303,57 @@ async function getInfoLendBook(data) {
   }
 }
 
+async function getTrackBorrowBook() {
+  try {
+      const trackBorrowList = await TheoDoiMuonSach.find()
+          .populate({
+              path: 'MaSach',
+              select: 'MaSach TenSach TacGia DonGia SoQuyen NamXuatBan Image MoTaSach'
+          })
+          .populate({
+              path: 'MaDocGia',
+              select: 'MaDocGia HoLot Ten NgaySinh Phai DiaChi DienThoai'
+          })
+          .populate({
+              path: 'Msnv',
+              select: 'Msnv HoTenNV ChucVu'
+          })
+          .sort({ createdAt: -1 }); // Sắp xếp theo thời gian tạo mới nhất
+          
+      return trackBorrowList;
+  } catch (err) {
+      console.error('Lỗi khi lấy danh sách theo dõi mượn sách:', err);
+      throw err;
+  }
+}
+
+async function updateBorrowStatus(requestId, adminId, status) {
+  try {
+    const updateFields = {
+      TrangThai: status,
+      Msnv: adminId
+    };
+
+    // Nếu duyệt (approved) thì cập nhật NgayMuon và NgayTra
+    if (status === 'approved') {
+      const now = new Date();
+      updateFields.NgayMuon = now;
+      updateFields.NgayTra = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // Cộng 7 ngày
+    }
+
+    const updated = await TheoDoiMuonSach.findByIdAndUpdate(
+      requestId,
+      updateFields,
+      { new: true }
+    );
+
+    return updated;
+  } catch (err) {
+    console.error('Lỗi khi cập nhật trạng thái mượn sách:', err);
+    throw err;
+  }
+}
+
 module.exports = {
   addBook,
   getAllBook,
@@ -312,5 +364,7 @@ module.exports = {
   deleteBook,
   getBookById,
   lendBook,
-  getInfoLendBook
+  getInfoLendBook,
+  getTrackBorrowBook,
+  updateBorrowStatus
 };

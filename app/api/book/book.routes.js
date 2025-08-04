@@ -11,7 +11,9 @@ const
         deleteBook,
         getBookById,
         lendBook,
-        getInfoLendBook
+        getInfoLendBook,
+        getTrackBorrowBook,
+        updateBorrowStatus
     } = require('./book.controller')
 
 const router = express.Router()
@@ -28,5 +30,7 @@ router.get('/getAllGenre', getAllGenre);
 
 router.post('/lendBook', lendBook);
 router.post('/getInfoLendBook', getInfoLendBook);
+router.get('/getTrackBorrowBook', getTrackBorrowBook);
+router.post('/updateBorrowStatus', updateBorrowStatus);
 
 module.exports = router

@@ -244,6 +244,34 @@ async function getInfoLendBook(req, res) {
     }
 }
 
+async function getTrackBorrowBook(req, res) {
+    try {
+        const trackBorrowList = await bookService.getTrackBorrowBook();
+        console.log(trackBorrowList)
+        res.json(trackBorrowList);
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách theo dõi mượn sách:', error);
+        res.status(500).send('Lấy danh sách theo dõi mượn sách thất bại');
+    }
+}
+
+async function updateBorrowStatus(req, res) {
+    try {
+        const { requestId, adminId, status } = req.body;
+
+        if (!requestId || !adminId || !status) {
+            return res.status(400).send("Thiếu thông tin cần thiết");
+        }
+
+        const updated = await bookService.updateBorrowStatus(requestId, adminId, status);
+
+        res.json(updated);
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái mượn sách:', error);
+        res.status(500).send('Cập nhật trạng thái mượn sách thất bại');
+    }
+}
+
 module.exports = {
     addBook,
     getAllBook,
@@ -254,5 +282,7 @@ module.exports = {
     deleteBook,
     getBookById,
     lendBook,
-    getInfoLendBook
+    getInfoLendBook,
+    getTrackBorrowBook,
+    updateBorrowStatus
 };

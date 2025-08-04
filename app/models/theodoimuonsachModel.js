@@ -24,7 +24,6 @@ const TheoDoiMuonSachSchema = new mongoose.Schema({
       'pending',    // Chờ duyệt
       'approved',   // Đã duyệt
       'denied',     // Bị từ chối
-      'borrowing',  // Đang mượn
       'returned',   // Đã trả
       'overdue'     // Quá hạn
     ],
