@@ -272,6 +272,23 @@ async function updateBorrowStatus(req, res) {
     }
 }
 
+async function extendBorrowTime(req, res) {
+    try {
+        const { requestId, adminId, newDueDate } = req.body;
+
+        if (!requestId || !adminId || !newDueDate) {
+            return res.status(400).send("Thiếu thông tin cần thiết");
+        }
+
+        const updated = await bookService.extendBorrowTime(requestId, adminId, newDueDate);
+
+        res.json(updated);
+    } catch (error) {
+        console.error('Lỗi khi gia hạn mượn sách:', error);
+        res.status(500).send('Gia hạn mượn sách thất bại');
+    }
+}
+
 module.exports = {
     addBook,
     getAllBook,
@@ -284,5 +301,6 @@ module.exports = {
     lendBook,
     getInfoLendBook,
     getTrackBorrowBook,
-    updateBorrowStatus
+    updateBorrowStatus,
+    extendBorrowTime
 };

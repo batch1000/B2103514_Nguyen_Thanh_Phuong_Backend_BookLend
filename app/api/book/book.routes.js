@@ -13,7 +13,8 @@ const
         lendBook,
         getInfoLendBook,
         getTrackBorrowBook,
-        updateBorrowStatus
+        updateBorrowStatus,
+        extendBorrowTime
     } = require('./book.controller')
 
 const router = express.Router()
@@ -32,5 +33,6 @@ router.post('/lendBook', lendBook);
 router.post('/getInfoLendBook', getInfoLendBook);
 router.get('/getTrackBorrowBook', getTrackBorrowBook);
 router.post('/updateBorrowStatus', updateBorrowStatus);
+router.post('/extendBorrowTime', extendBorrowTime);
 
 module.exports = router

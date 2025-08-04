@@ -17,7 +17,12 @@ const TheoDoiMuonSachSchema = new mongoose.Schema({
     required: false,
     default: null
   },
-
+  
+  DaGiaHan: {
+    type: Boolean,
+    default: false
+  },
+  
   TrangThai: {
     type: String,
     enum: [

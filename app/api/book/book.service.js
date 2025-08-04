@@ -354,6 +354,46 @@ async function updateBorrowStatus(requestId, adminId, status) {
   }
 }
 
+async function extendBorrowTime(requestId, adminId, newDueDate) {
+  try {
+    const request = await TheoDoiMuonSach.findById(requestId);
+
+    if (!request) {
+      throw new Error('Không tìm thấy yêu cầu mượn sách');
+    }
+
+    if (request.TrangThai !== 'approved') {
+      throw new Error('Chỉ có thể gia hạn cho yêu cầu đã được duyệt');
+    }
+
+    if (!request.NgayTra) {
+      throw new Error('Không có ngày trả hiện tại để gia hạn');
+    }
+
+    if (request.DaGiaHan) {
+      throw new Error('Yêu cầu này đã được gia hạn trước đó');
+    }
+
+    const newDate = new Date(newDueDate);
+
+    if (newDate <= request.NgayTra) {
+      throw new Error('Ngày gia hạn phải sau ngày trả hiện tại');
+    }
+
+    // Cập nhật
+    request.NgayTra = newDate;
+    request.Msnv = adminId;
+    request.DaGiaHan = true;
+
+    const updated = await request.save();
+    return updated;
+  } catch (err) {
+    console.error('Lỗi khi gia hạn mượn sách:', err);
+    throw err;
+  }
+}
+
+
 module.exports = {
   addBook,
   getAllBook,
@@ -366,5 +406,6 @@ module.exports = {
   lendBook,
   getInfoLendBook,
   getTrackBorrowBook,
-  updateBorrowStatus
+  updateBorrowStatus,
+  extendBorrowTime
 };
