@@ -14,7 +14,8 @@ async function login(data) {
 
     return {
       _id: user.MaDocGia._id,
-      role: "User"
+      role: "User",
+      hoTen: `${user.MaDocGia.HoLot} ${user.MaDocGia.Ten}`
     };
   }
 
@@ -25,7 +26,8 @@ async function login(data) {
 
     return {
       _id: nv._id,
-      role: "Admin"
+      role: "Admin",
+      hoTen: nv.HoTenNV
     };
   }
 
