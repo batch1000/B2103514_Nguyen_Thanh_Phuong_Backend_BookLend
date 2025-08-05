@@ -294,7 +294,7 @@ async function getInfoLendBook(data) {
       const lendRecord = await TheoDoiMuonSach.findOne({
           MaSach,
           MaDocGia,
-          TrangThai: { $in: ['pending', 'approved', 'borrowing'] }
+          TrangThai: { $in: ['pending', 'approved', 'borrowing', 'returned', 'overdue'] }
       }).sort({ createdAt: -1 }); // Lấy record mới nhất
       return lendRecord;
   } catch (err) {
@@ -413,6 +413,22 @@ async function extendBorrowTime(requestId, adminId, newDueDate) {
   }
 }
 
+async function getBorrowBookOfUser(userId) {
+  try {
+    const borrowedBooks = await TheoDoiMuonSach.find({ MaDocGia: userId })
+      .populate({
+        path: 'MaSach',
+        select: 'MaSach TenSach TacGia Image MoTaSach DonGia NamXuatBan MaTheLoai'
+      })
+      .sort({ createdAt: -1 }) // Đảo ngược: mới nhất trước
+      .exec();
+
+    return borrowedBooks;
+  } catch (error) {
+    console.error('Lỗi khi lấy sách đã mượn của user:', error);
+    throw error;
+  }
+}
 
 module.exports = {
   addBook,
@@ -427,5 +443,6 @@ module.exports = {
   getInfoLendBook,
   getTrackBorrowBook,
   updateBorrowStatus,
-  extendBorrowTime
+  extendBorrowTime,
+  getBorrowBookOfUser
 };

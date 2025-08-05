@@ -289,6 +289,18 @@ async function extendBorrowTime(req, res) {
     }
 }
 
+async function getBorrowBookOfUser(req, res) {
+    try {
+        const userId = req.params.id;
+        const books = await bookService.getBorrowBookOfUser(userId);
+        console.log(books);
+        res.json(books);
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách sách:', error);
+        res.status(500).send('Lấy danh sách sách thất bại');
+    }
+}
+
 module.exports = {
     addBook,
     getAllBook,
@@ -302,5 +314,6 @@ module.exports = {
     getInfoLendBook,
     getTrackBorrowBook,
     updateBorrowStatus,
-    extendBorrowTime
+    extendBorrowTime,
+    getBorrowBookOfUser
 };
